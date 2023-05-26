@@ -1,0 +1,24 @@
+{
+    "type": "object",
+    "properties": {
+        "androidTargetSDK": {
+            "type": "number"
+        },
+        "appResourcesPath": {
+            "type": "string"
+        },
+        "dotEnvPath": {
+            "type": "string"
+        },
+        "projectRoot": {
+            "type": "string"
+        },
+        "isAndroid": {
+            "type": "boolean"
+        },
+        "isIOS": {
+            "type": "boolean"
+        }
+    },
+    "additionalProperties": true
+}
