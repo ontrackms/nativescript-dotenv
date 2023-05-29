@@ -1,4 +1,5 @@
 {
     "name": "bundle.id",
-    "version": ""
+    "version": "",
+    "main": "index.js"
 }

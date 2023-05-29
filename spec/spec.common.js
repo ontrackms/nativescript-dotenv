@@ -35,12 +35,8 @@ function setupBeforeAndAfter(webpackConfig) {
   });
 
   beforeEach(done => {
-    clearDistDir(webpackConfig, () => {
-      copyDistDir(webpackConfig, () => {
-        // dotenv.config({ path: path.resolve(webpackConfig.output.path, '.env') });
-        done();
-      });
-    });
+    clearDistDir(webpackConfig,
+      copyDistDir.bind(null, webpackConfig, done))
   });
 }
 

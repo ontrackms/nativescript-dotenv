@@ -1,6 +1,6 @@
 {
-  "name": "nativescript-app-bundle-plugin",
-  "version": "1.0.0",
+  "name": "nativescript-dotenv",
+  "version": "1.0.1",
   "main": "src/index.js",
   "dependencies": {
     "@nativescript/webpack": "~5.0.0",
@@ -9,18 +9,22 @@
     "semver-parser": "^3.1.1"
   },
   "scripts": {
-    "test": "jest --runInBand --verbose --coverage --silent=false"
+    "test": "standard && jest --runInBand --verbose --coverage --silent=false"
   },
   "jest": {
     "rootDir": "./",
+    "coveragePathIgnorePatterns": [
+      "/node_modules/",
+      "/spec/"
+    ],
     "moduleDirectories": [
       "node_modules",
       "src"
     ]
   },
-  "semistandard": {
+  "standard": {
     "ignore": [
-      "/spec/**/*"
+      "/spec/"
     ]
   },
   "author": "OntrackMS",
@@ -28,6 +32,8 @@
   "devDependencies": {
     "dotenv": "^16.0.3",
     "jest": "^29.5.0",
+    "nativescript": "^8.5.3",
+    "standard": "^17.0.0",
     "webpack": "^5.83.1",
     "webpack-cli": "^5.1.1"
   }
