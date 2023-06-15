@@ -1,11 +1,12 @@
 {
-  "name": "nativescript-dotenv",
+  "name": "@ontrackms/nativescript-dotenv",
   "version": "1.0.0",
   "main": "dist/index.js",
   "types": "@types/index.d.ts",
   "files": [
     "dist/**"
   ],
+  "repository": "https://github.com/ontrackms/nativescript-dotenv.git",
   "dependencies": {
     "@nativescript/webpack": "~5.0.0",
     "@types/webpack": "^5.28.1",
