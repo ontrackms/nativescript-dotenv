@@ -3,12 +3,12 @@ const path = require('path');
 const dotenv = require('dotenv');
 const webpack = require('webpack');
 
-const NativeScriptBundlePlugin = require('../src');
+const { NativeScriptBundlePlugin } = require('../src');
 
 const OUTPUT_DIR = path.resolve(__dirname, 'dist');
 
 const webpackConfig = {
-  mode: 'production',
+  // mode: 'production',
   context: path.resolve(__dirname, 'fixtures'),
   entry: {
     app: path.join(__dirname, 'fixtures', 'index.js')

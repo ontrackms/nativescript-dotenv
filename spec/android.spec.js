@@ -11,7 +11,8 @@ const {
   webpackConfig
 } = require('./spec.common');
 
-const NativeScriptDotenv = require('../src');
+const { NativeScriptBundlePlugin } = require('../src');
+const { ValidationError } = require('../src/error');
 
 describe('NativeScriptBundlePlugin for Android', () => {
 
@@ -25,7 +26,7 @@ describe('NativeScriptBundlePlugin for Android', () => {
     (err, stats) => {
       expect(err).toBeFalsy();
       const fileContent = fs.readFileSync(path.resolve(appResourcesPath, 'Android', 'src', 'main', 'AndroidManifest.xml'), 'utf-8');
-      const semverDefinition = semver.parseSemVer(process.env[NativeScriptDotenv.DotenvVariableMap.BUNDLE_VERSION]);
+      const semverDefinition = semver.parseSemVer(process.env[NativeScriptBundlePlugin.EnvironmentVariableMap.BundleVersion]);
       // @todo refactor these templates
       const versionCode = `${semverDefinition.major}${semverDefinition.minor}${semverDefinition.patch}${semverDefinition.build || 1}`;
       const versionName = `${semverDefinition.major}.${semverDefinition.minor}.${semverDefinition.patch}`;
@@ -46,7 +47,7 @@ describe('NativeScriptBundlePlugin for Android', () => {
         dotenvPath: path.resolve(webpackConfig.output.path, '.env.android_limit_exceeds')
       });
     }
-    expect(badWebpackConfig).toThrow('Android versionCode exceeds ANDROID_VERSION_CODE_MAX');
+    expect(badWebpackConfig).toThrow(ValidationError);
     done();
   });
 

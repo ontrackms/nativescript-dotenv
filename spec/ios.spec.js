@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const plist = require('plist');
 const semver = require('semver-parser');
-const NativeScriptDotenv = require('..');
+const { NativeScriptBundlePlugin } = require('../src');
 const {
   appResourcesPath,
   runWebpackWithPluginConfig,
@@ -24,10 +24,10 @@ describe('NativeScriptBundlePlugin for iOS', () => {
     },
     (err, stats) => {
       expect(err).toBeFalsy();
-      const semverDefinition = semver.parseSemVer(process.env[NativeScriptDotenv.DotenvVariableMap.BUNDLE_VERSION]);
+      const semverDefinition = semver.parseSemVer(process.env[NativeScriptBundlePlugin.EnvironmentVariableMap.BundleVersion]);
       const plistContent = fs.readFileSync(path.resolve(webpackConfig.output.path, 'App_Resources', 'iOS', 'Info.plist'), 'utf-8');
       const plistDict = plist.parse(plistContent);
-      expect(plistDict).toHaveProperty('CFBundleShortVersionString', process.env[NativeScriptDotenv.DotenvVariableMap.BUNDLE_VERSION]);
+      expect(plistDict).toHaveProperty('CFBundleShortVersionString', process.env[NativeScriptBundlePlugin.EnvironmentVariableMap.BundleVersion]);
       expect(plistDict).toHaveProperty('CFBundleVersion', String(semverDefinition.build || 1));
       done();
     });
@@ -44,7 +44,7 @@ describe('NativeScriptBundlePlugin for iOS', () => {
       const matches = xcconfigString.match(/DEVELOPMENT_TEAM\s+=\s+(\w+);?/);
       expect(Array.isArray(matches)).toBe(true);
       expect(matches).toHaveLength(2);
-      expect(matches).toContain(process.env[NativeScriptDotenv.DotenvVariableMap.APPLE_TEAM_ID]);
+      expect(matches).toContain(process.env[NativeScriptBundlePlugin.EnvironmentVariableMap.AppleTeamID]);
       done();
     });
   });

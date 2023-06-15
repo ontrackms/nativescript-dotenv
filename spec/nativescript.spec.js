@@ -1,6 +1,7 @@
 const path = require('path');
 const webpack = require('@nativescript/webpack');
-const NativeScriptBundlePlugin = require('../src/index');
+const { NativeScriptBundlePlugin } = require('../src/index');
+const { IntegrationError } = require('../src/error');
 const { webpackConfig, setupBeforeAndAfter } = require('./spec.common');
 
 const originalCwd = process.cwd();
@@ -31,7 +32,7 @@ describe('NativeScript integration', () => {
             NativeScriptBundlePlugin.init(webpack);
             webpack.resolveConfig();
         }
-        expect(badNativeScriptIntegration).toThrow('DotEnvPlugin not found within NativeScript');
+        expect(badNativeScriptIntegration).toThrow(IntegrationError);
         done();
     });
 
