@@ -71,27 +71,25 @@ export class NativeScriptBundlePlugin {
 
   static init (webpack: any) {
     webpack.chainWebpack((config: Config) => {
-        const { env } = webpack
-
-        const DotEnvPlugin = config.plugin('DotEnvPlugin')
-
-        if (!DotEnvPlugin.has('plugin')) {
-          throw new IntegrationError('DotEnv plugin not found in NativeScript.')
-        }
-  
-        const [dotenvConfig] = DotEnvPlugin.get('args')
-  
-        webpack.mergeWebpack({
-          plugins: [
-            new NativeScriptBundlePlugin({
-              isIOS: env.ios,
-              isAndroid: env.android,
-              dotenvPath: dotenvConfig.path
-            })
-          ]
-        })
+      const { env } = webpack
+      const DotEnvPlugin = config.plugin('DotEnvPlugin')
+      
+      if (!DotEnvPlugin.has('plugin')) {
+        throw new IntegrationError('DotEnv plugin not found in NativeScript.')
       }
-    )
+
+      const [dotenvConfig] = DotEnvPlugin.get('args')
+      
+      webpack.mergeWebpack({
+        plugins: [
+          new NativeScriptBundlePlugin({
+            isIOS: env.ios,
+            isAndroid: env.android,
+            dotenvPath: dotenvConfig.path
+          })
+        ]
+      })
+    })
   }
 
   /**
