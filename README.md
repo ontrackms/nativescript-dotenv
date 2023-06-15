@@ -10,15 +10,14 @@ _Developed by Ontrack!_
 
 ```javascript
 // webpack.config.js
-const webpack = require("@nativescript/webpack");
-const NativeScriptDotenv = require("@ontrackms/nativescript-dotenv");
+const { NativeScriptDotenv } = require("@ontrackms/nativescript-dotenv");
 
 module.exports = (env) => {
-  webpack.init(env);
-  
+  //..
+
   NativeScriptDotenv.init(webpack);
   
-  return webpack.resolveConfig();
+  //..
 };
 ```
 
