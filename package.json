@@ -6,7 +6,10 @@
   "files": [
     "dist/**"
   ],
-  "repository": "https://github.com/ontrackms/nativescript-dotenv.git",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ontrackms/nativescript-dotenv.git"
+  },
   "dependencies": {
     "@nativescript/webpack": "~5.0.0",
     "@types/webpack": "^5.28.1",
