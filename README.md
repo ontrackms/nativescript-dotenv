@@ -4,7 +4,7 @@ _Developed by Ontrack!_
 
 ## Installation
 
-`npm i -D ontrackms/nativescript-dotenv`
+`npm i -D @ontrackms/nativescript-dotenv`
 
 ### Usage
 
