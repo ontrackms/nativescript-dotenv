@@ -48,7 +48,7 @@ export class NativeScriptBundlePlugin {
 
     this.loadDotenv()
 
-    const semver = parseSemVer(this.getEnv(NativeScriptBundlePlugin.EnvironmentVariableMap.BundleVersion))
+    const semver = parseSemVer(options.semver || this.getEnv(NativeScriptBundlePlugin.EnvironmentVariableMap.BundleVersion))
 
     if (!isValidSemVer(this.getEnv(NativeScriptBundlePlugin.EnvironmentVariableMap.BundleVersion))) {
       throw new ValidationError('Invalid version string provided.');
@@ -69,7 +69,7 @@ export class NativeScriptBundlePlugin {
     }
   }
 
-  static init (webpack: any) {
+  static init (webpack: any, options: Partial<NativeScriptDotenvOptions> = {}) {
     webpack.chainWebpack((config: Config) => {
       const { env } = webpack
       const DotEnvPlugin = config.plugin('DotEnvPlugin')
@@ -85,7 +85,8 @@ export class NativeScriptBundlePlugin {
           new NativeScriptBundlePlugin({
             isIOS: env.ios,
             isAndroid: env.android,
-            dotenvPath: dotenvConfig.path
+            dotenvPath: dotenvConfig.path,
+            ...options
           })
         ]
       })
