@@ -3,7 +3,6 @@
     "allowSyntheticDefaultImports": true,
     "baseUrl": "./",
     "declaration": true,
-    "declarationDir": "./dist/@types",
     "emitDecoratorMetadata": true,
     "esModuleInterop": true,
     "experimentalDecorators": true,
