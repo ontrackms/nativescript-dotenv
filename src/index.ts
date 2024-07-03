@@ -6,6 +6,7 @@ import { build as objectToPlist, parse as plistToObject } from 'plist'
 import { config } from 'dotenv'
 import Config from 'webpack-chain'
 import { IntegrationError, ResourceRequiredError, ValidationError } from './error'
+import NSWebpack, { IWebpackEnv } from "@nativescript/webpack"
 
 export type NativeScriptDotenvOptions = {
   appResourcesPath: string,
@@ -69,7 +70,7 @@ export class NativeScriptBundlePlugin {
     }
   }
 
-  static init (webpack: any, options: Partial<NativeScriptDotenvOptions> = {}) {
+  static init (webpack: typeof NSWebpack & { env: IWebpackEnv }, options: Partial<NativeScriptDotenvOptions> = {}) {
     webpack.chainWebpack((config: Config) => {
       const { env } = webpack
       const DotEnvPlugin = config.plugin('DotEnvPlugin')
