@@ -7,7 +7,7 @@ import { config } from 'dotenv'
 import Config from 'webpack-chain'
 import { IntegrationError, ResourceRequiredError, ValidationError } from './error'
 
-type NativeScriptDotenvOptions = {
+export type NativeScriptDotenvOptions = {
   appResourcesPath: string,
   isAndroid: boolean,
   isIOS: boolean,
