@@ -40,7 +40,7 @@ export class NativeScriptDotEnvPlugin {
 
   static ANDROID_VERSION_CODE_MAX = 2100000000
 
-  constructor (options: Partial<NativeScriptDotenvOptions> = {}) {
+  constructor(options: Partial<NativeScriptDotenvOptions> = {}) {
     this.options = { ...NativeScriptDotEnvPlugin.defaultOptions, ...options }
 
     if (!this.options.isAndroid && !this.options.isIOS) {
@@ -70,17 +70,17 @@ export class NativeScriptDotEnvPlugin {
     }
   }
 
-  static init (webpack: typeof NSWebpack & { env: IWebpackEnv }, options: Partial<NativeScriptDotenvOptions> = {}) {
+  static init(webpack: typeof NSWebpack & { env: IWebpackEnv }, options: Partial<NativeScriptDotenvOptions> = {}) {
     webpack.chainWebpack((config: Config) => {
       const { env } = webpack
       const DotEnvPlugin = config.plugin('DotEnvPlugin')
-      
+
       if (!DotEnvPlugin.has('plugin')) {
         throw new IntegrationError('DotEnv plugin not found in NativeScript.')
       }
 
       const [dotenvConfig] = DotEnvPlugin.get('args')
-      
+
       webpack.mergeWebpack({
         // @ts-ignore
         plugins: [
@@ -101,60 +101,73 @@ export class NativeScriptDotEnvPlugin {
    * @param {*} defaultValue
    * @returns process.env[`key`]
    */
-  getEnv (key: string, defaultValue?: any) {
+  getEnv(key: string, defaultValue?: any) {
     return process.env[key] || defaultValue
   }
 
-  apply (compiler: any) {
-    const hook = this.setPlatformVersion.bind(this)
+  apply(compiler: any) {
+    const hook = this.processEnvVars.bind(this)
     compiler.hooks.beforeRun.tap(this.constructor.name, hook)
   }
 
-  setPlatformVersion (compiler: any) {
-    const { appResourcesPath, projectRoot, isAndroid, semver } = this.options
-    const absPath = resolve(appResourcesPath,
-      isAndroid
-        ? 'Android/src/main/AndroidManifest.xml'
-        : 'iOS/Info.plist')
-    let fileContent = readFileSync(absPath, 'utf8')
+  processEnvVars(compiler: any) {
+    const envVarMap = new Map<EnvironmentVariableName, Function>([
+      [EnvironmentVariableName.AppleTeamID, this.setAppleDevelopmentTeam],
+      [EnvironmentVariableName.BundleID, this.setBundleID],
+      [EnvironmentVariableName.BundleVersion, this.setBundleVersion],
+    ]);
+    Object.values(NativeScriptDotEnvPlugin.EnvironmentVariableMap).forEach(variable => {
+      if (this.getEnv(variable)) {
+        envVarMap.get(variable).call(this, compiler);
+      }
+    })
+  }
 
-    const packageJSON = JSON.parse(readFileSync(resolve(projectRoot, 'package.json'), 'utf-8'))
+  setAppleDevelopmentTeam(compiler: any) {
+    if (this.options.isAndroid) {
+      return;
+    }
 
-    packageJSON.name = this.getEnv(NativeScriptDotEnvPlugin.EnvironmentVariableMap.BundleID)
+    const xcconfigString = readFileSync(this.xcconfigPath, 'utf-8')
+    const xcconfigDevTeamMatches = xcconfigString.match(/DEVELOPMENT_TEAM\s+=\s+(\w+);?/)
+
+    if (xcconfigDevTeamMatches && xcconfigDevTeamMatches[1] && xcconfigDevTeamMatches[1] !== this.getEnv(NativeScriptDotEnvPlugin.EnvironmentVariableMap.AppleTeamID)) {
+      writeFileSync(this.xcconfigPath, xcconfigString.replace(xcconfigDevTeamMatches[1], process.env.APPLE_TEAM_ID));
+    }
+  }
+
+  setBundleID(compiler: any) {
+    const packageJSON = JSON.parse(readFileSync(this.packageJSONPath, 'utf-8'));
+    packageJSON.name = this.getEnv(NativeScriptDotEnvPlugin.EnvironmentVariableMap.BundleID);
+    writeFileSync(this.packageJSONPath, JSON.stringify(packageJSON, null, 2));
+  }
+
+  setBundleVersion(compiler: any) {
+    const { isAndroid, semver } = this.options
+    const absPath = isAndroid ? this.androidManifestPath : this.iOSPlistPath
+    let fileContent = readFileSync(absPath, 'utf8');
+
+    const packageJSON = JSON.parse(readFileSync(this.packageJSONPath, 'utf-8'))
     packageJSON.version = semver.versionString
-
-    writeFileSync(resolve(projectRoot, 'package.json'), JSON.stringify(packageJSON, null, 2))
+    writeFileSync(this.packageJSONPath, JSON.stringify(packageJSON, null, 2))
 
     if (isAndroid) {
       fileContent = fileContent
         .replace(/(versionCode=".*?")/, `versionCode="${semver.major}${semver.minor}${semver.patch}${semver.build}"`)
-        .replace(/(versionName=".*?")/, `versionName="${semver.versionString}"`)
+        .replace(/(versionName=".*?")/, `versionName="${semver.versionString}"`);
     } else {
-      // update build.xcconfig for Xcode
-      const xcconfigString = readFileSync(resolve(projectRoot, appResourcesPath, 'iOS/build.xcconfig'), 'utf-8')
-
-      const xcconfigDevTeamMatches = xcconfigString.match(/DEVELOPMENT_TEAM\s+=\s+(\w+);?/)
-
-      if (xcconfigDevTeamMatches &&
-        xcconfigDevTeamMatches[1] &&
-        xcconfigDevTeamMatches[1] !== this.getEnv(NativeScriptDotEnvPlugin.EnvironmentVariableMap.AppleTeamID)
-      ) {
-        writeFileSync(
-          resolve(projectRoot, appResourcesPath, 'iOS/build.xcconfig'),
-          xcconfigString.replace(xcconfigDevTeamMatches[1], process.env.APPLE_TEAM_ID))
-      }
-
-      const { build: CFBundleVersion, versionString: CFBundleShortVersionString } = semver
+      const { build: CFBundleVersion, versionString: CFBundleShortVersionString } = semver;
       fileContent = objectToPlist({
         ...plistToObject(fileContent) as Record<string, unknown>,
         CFBundleShortVersionString,
         CFBundleVersion
-      })
+      });
     }
-    writeFileSync(absPath, fileContent, 'utf8')
+
+    writeFileSync(absPath, fileContent, 'utf8');
   }
 
-  loadDotenv () {
+  loadDotenv() {
     const dotenvOptions = {
       path: this.options.dotenvPath,
       override: false
@@ -170,20 +183,25 @@ export class NativeScriptDotEnvPlugin {
       throw new ResourceRequiredError(dotenvResponse.error.message);
     }
 
-    this.validatedEnvironmentVariables()
-
     if (this.options.verbose) {
       console.table(dotenvResponse.parsed);
     }
   }
 
-  validatedEnvironmentVariables () {
-    Object.values(NativeScriptDotEnvPlugin.EnvironmentVariableMap).forEach(variable => {
-      if (!this.getEnv(variable)) {
-        process.exitCode = 1
-        throw new ValidationError(`Missing environment variable "${variable}"`)
-      }
-    })
+  get androidManifestPath() {
+    return resolve(this.options.projectRoot, this.options.appResourcesPath, 'Android/src/main/AndroidManifest.xml');
+  }
+
+  get iOSPlistPath() {
+    return resolve(this.options.projectRoot, this.options.appResourcesPath, 'iOS/Info.plist');
+  }
+
+  get packageJSONPath() {
+    return resolve(this.options.projectRoot, 'package.json');
+  }
+
+  get xcconfigPath() {
+    return resolve(this.options.projectRoot, this.options.appResourcesPath, 'iOS/build.xcconfig');
   }
 }
 
