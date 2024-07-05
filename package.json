@@ -28,6 +28,9 @@
     "ts-jest": "^29.1.0",
     "typescript": "^5.1.3"
   },
+  "files": [
+    "dist/**"
+  ],
   "standard": {
     "ignore": [
       "/spec/"
@@ -37,7 +40,6 @@
     "test": "NODE_ENV=test jest --runInBand --verbose --coverage --silent=false",
     "prebuild": "del ./dist/",
     "build": "tsc --build",
-    "postbuild": "cp package.json dist && cp readme.md dist",
-    "prepublish": "cd dist"
+    "postbuild": "cp package.json dist && cp readme.md dist"
   }
 }
