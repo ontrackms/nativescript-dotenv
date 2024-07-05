@@ -24,7 +24,7 @@ enum EnvironmentVariableName {
   BundleVersion = 'NATIVESCRIPT_BUNDLE_VERSION',
 }
 
-export class NativeScriptBundlePlugin {
+export class NativeScriptDotEnvPlugin {
   options: NativeScriptDotenvOptions
 
   static defaultOptions: NativeScriptDotenvOptions = {
@@ -41,7 +41,7 @@ export class NativeScriptBundlePlugin {
   static ANDROID_VERSION_CODE_MAX = 2100000000
 
   constructor (options: Partial<NativeScriptDotenvOptions> = {}) {
-    this.options = { ...NativeScriptBundlePlugin.defaultOptions, ...options }
+    this.options = { ...NativeScriptDotEnvPlugin.defaultOptions, ...options }
 
     if (!this.options.isAndroid && !this.options.isIOS) {
       throw new ValidationError("No platform provided, expecting isIOS|isAndroid options.")
@@ -49,9 +49,9 @@ export class NativeScriptBundlePlugin {
 
     this.loadDotenv()
 
-    const semver = parseSemVer(options.semver || this.getEnv(NativeScriptBundlePlugin.EnvironmentVariableMap.BundleVersion))
+    const semver = parseSemVer(options.semver || this.getEnv(NativeScriptDotEnvPlugin.EnvironmentVariableMap.BundleVersion))
 
-    if (!isValidSemVer(this.getEnv(NativeScriptBundlePlugin.EnvironmentVariableMap.BundleVersion))) {
+    if (!isValidSemVer(this.getEnv(NativeScriptDotEnvPlugin.EnvironmentVariableMap.BundleVersion))) {
       throw new ValidationError('Invalid version string provided.');
     }
 
@@ -65,7 +65,7 @@ export class NativeScriptBundlePlugin {
       versionString: `${semver.major}.${semver.minor}.${semver.patch}`
     }
 
-    if (this.options.isAndroid && NativeScriptBundlePlugin.ANDROID_VERSION_CODE_MAX < parseInt(this.options.semver.build, 10)) {
+    if (this.options.isAndroid && NativeScriptDotEnvPlugin.ANDROID_VERSION_CODE_MAX < parseInt(this.options.semver.build, 10)) {
       throw new ValidationError('Android versionCode exceeds ANDROID_VERSION_CODE_MAX')
     }
   }
@@ -82,8 +82,9 @@ export class NativeScriptBundlePlugin {
       const [dotenvConfig] = DotEnvPlugin.get('args')
       
       webpack.mergeWebpack({
+        // @ts-ignore
         plugins: [
-          new NativeScriptBundlePlugin({
+          new NativeScriptDotEnvPlugin({
             isIOS: env.ios,
             isAndroid: env.android,
             dotenvPath: dotenvConfig.path,
@@ -119,7 +120,7 @@ export class NativeScriptBundlePlugin {
 
     const packageJSON = JSON.parse(readFileSync(resolve(projectRoot, 'package.json'), 'utf-8'))
 
-    packageJSON.name = this.getEnv(NativeScriptBundlePlugin.EnvironmentVariableMap.BundleID)
+    packageJSON.name = this.getEnv(NativeScriptDotEnvPlugin.EnvironmentVariableMap.BundleID)
     packageJSON.version = semver.versionString
 
     writeFileSync(resolve(projectRoot, 'package.json'), JSON.stringify(packageJSON, null, 2))
@@ -136,7 +137,7 @@ export class NativeScriptBundlePlugin {
 
       if (xcconfigDevTeamMatches &&
         xcconfigDevTeamMatches[1] &&
-        xcconfigDevTeamMatches[1] !== this.getEnv(NativeScriptBundlePlugin.EnvironmentVariableMap.AppleTeamID)
+        xcconfigDevTeamMatches[1] !== this.getEnv(NativeScriptDotEnvPlugin.EnvironmentVariableMap.AppleTeamID)
       ) {
         writeFileSync(
           resolve(projectRoot, appResourcesPath, 'iOS/build.xcconfig'),
@@ -177,7 +178,7 @@ export class NativeScriptBundlePlugin {
   }
 
   validatedEnvironmentVariables () {
-    Object.values(NativeScriptBundlePlugin.EnvironmentVariableMap).forEach(variable => {
+    Object.values(NativeScriptDotEnvPlugin.EnvironmentVariableMap).forEach(variable => {
       if (!this.getEnv(variable)) {
         process.exitCode = 1
         throw new ValidationError(`Missing environment variable "${variable}"`)
@@ -186,4 +187,4 @@ export class NativeScriptBundlePlugin {
   }
 }
 
-export default NativeScriptBundlePlugin
+export default NativeScriptDotEnvPlugin

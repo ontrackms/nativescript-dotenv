@@ -1,7 +1,7 @@
 const path = require('path');
 const webpack = require('@nativescript/webpack');
-const { NativeScriptBundlePlugin } = require('../src/index');
-const { IntegrationError } = require('../src/error');
+const { NativeScriptDotEnvPlugin } = require('@ontrackms/nativescript-dotenv');
+const { IntegrationError } = require('@ontrackms/nativescript-dotenv/error');
 const { webpackConfig, setupBeforeAndAfter } = require('./spec.common');
 
 const originalCwd = process.cwd();
@@ -29,24 +29,24 @@ describe('NativeScript integration', () => {
                 nativescriptLibPath: true,
                 ...webpackConfig,
             });
-            NativeScriptBundlePlugin.init(webpack);
+            NativeScriptDotEnvPlugin.init(webpack);
             webpack.resolveConfig();
         }
         expect(badNativeScriptIntegration).toThrow(IntegrationError);
         done();
     });
 
-    it('should add NativeScriptBundlePlugin to @nativescript/webpack config', done => {
+    it('should add NativeScriptDotEnvPlugin to @nativescript/webpack config', done => {
        webpack.init({
             ios: true,
             nativescriptLibPath: true,
             ...webpackConfig,
         });
         webpack.useConfig('base');
-        NativeScriptBundlePlugin.init(webpack);
+        NativeScriptDotEnvPlugin.init(webpack);
         const resolvedConfig = webpack.resolveConfig();
         expect(resolvedConfig).toHaveProperty('plugins');
-        expect(findPlugin(resolvedConfig.plugins, NativeScriptBundlePlugin)).not.toBeUndefined();
+        expect(findPlugin(resolvedConfig.plugins, NativeScriptDotEnvPlugin)).not.toBeUndefined();
         done();
         function findPlugin(plugins, type) {
             return plugins.filter(p => p instanceof type).shift();

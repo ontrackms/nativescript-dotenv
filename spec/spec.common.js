@@ -3,7 +3,7 @@ const path = require('path');
 const dotenv = require('dotenv');
 const webpack = require('webpack');
 
-const { NativeScriptBundlePlugin } = require('../src');
+const { NativeScriptDotEnvPlugin } = require('@ontrackms/nativescript-dotenv');
 
 const OUTPUT_DIR = path.resolve(__dirname, 'dist');
 
@@ -57,7 +57,7 @@ function runWebpackWithPluginConfig(pluginConfig, callback) {
   webpack({
     ...webpackConfig,
     plugins: [
-      new NativeScriptBundlePlugin({
+      new NativeScriptDotEnvPlugin({
         appResourcesPath,
         dotenvPath: path.resolve(webpackConfig.output.path, '.env'),
         projectRoot: webpackConfig.output.path,

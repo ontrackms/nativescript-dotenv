@@ -2,7 +2,7 @@
 'use strict';
 
 const path = require('path');
-const { NativeScriptBundlePlugin } = require('../src');
+const { NativeScriptBundlePlugin } = require('@ontrackms/nativescript-dotenv');
 const { ValidationError, IntegrationError, ResourceRequiredError } = require('../src/error');
 const { runWebpackWithPluginConfig, setupBeforeAndAfter, webpackConfig } = require('./spec.common');
 

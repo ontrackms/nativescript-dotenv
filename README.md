@@ -7,21 +7,21 @@ _Developed by Ontrack!_
 `npm i -D @ontrackms/nativescript-dotenv`
 
 ### Usage
+Add the following lines to the exported function in `webpack.config.js`
 
 ```javascript
-// webpack.config.js
-const { NativeScriptDotenv } = require("@ontrackms/nativescript-dotenv");
+const { NativeScriptDotEnvPlugin } = require("@ontrackms/nativescript-dotenv");
 
 module.exports = (env) => {
-  //..
-
-  NativeScriptDotenv.init(webpack);
-  
-  //..
+  webpack.init(env);
+  // must be called after webpack.init
+  NativeScriptDotEnvPlugin.init(webpack);
+  return webpack.resolveConfig();
 };
 ```
 
 ### Configuration
+The following environment variables are supported in the dotenv (.env) file.
 
 ```.env
 NATIVESCRIPT_BUNDLE_ID=com.corp.app.test

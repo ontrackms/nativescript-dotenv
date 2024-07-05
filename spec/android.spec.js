@@ -11,10 +11,10 @@ const {
   webpackConfig
 } = require('./spec.common');
 
-const { NativeScriptBundlePlugin } = require('../src');
-const { ValidationError } = require('../src/error');
+const { NativeScriptDotEnvPlugin } = require('@ontrackms/nativescript-dotenv');
+const { ValidationError } = require('@ontrackms/nativescript-dotenv/error');
 
-describe('NativeScriptBundlePlugin for Android', () => {
+describe('NativeScriptDotEnvPlugin for Android', () => {
 
   setupBeforeAndAfter(webpackConfig);
 
@@ -26,7 +26,7 @@ describe('NativeScriptBundlePlugin for Android', () => {
     (err, stats) => {
       expect(err).toBeFalsy();
       const fileContent = fs.readFileSync(path.resolve(appResourcesPath, 'Android', 'src', 'main', 'AndroidManifest.xml'), 'utf-8');
-      const semverDefinition = semver.parseSemVer(process.env[NativeScriptBundlePlugin.EnvironmentVariableMap.BundleVersion]);
+      const semverDefinition = semver.parseSemVer(process.env[NativeScriptDotEnvPlugin.EnvironmentVariableMap.BundleVersion]);
       // @todo refactor these templates
       const versionCode = `${semverDefinition.major}${semverDefinition.minor}${semverDefinition.patch}${semverDefinition.build || 1}`;
       const versionName = `${semverDefinition.major}.${semverDefinition.minor}.${semverDefinition.patch}`;

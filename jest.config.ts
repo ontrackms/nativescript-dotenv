@@ -1,30 +1,22 @@
-import type {Config} from 'jest';
+import type { Config } from 'jest';
 
 const config: Config = {
+  coveragePathIgnorePatterns: [
+    "/node_modules/",
+    "/spec/",
+    "/dist/"
+  ],
+  rootDir: "./",
   transform: {
     '\\.ts?$': 'babel-jest'
   },
-  rootDir: "./",
-  coveragePathIgnorePatterns: [
-    "/node_modules/",
-    "/spec/"
-  ],
   moduleDirectories: [
     "node_modules",
     "src"
-  ]
+  ],
+  moduleNameMapper: {
+		'^@ontrackms/nativescript-dotenv$': '<rootDir>/src'
+	},
 };
 
 export default config;
-
-// "jest": {
-//   "rootDir": "./",
-//   "coveragePathIgnorePatterns": [
-//     "/node_modules/",
-//     "/spec/"
-//   ],
-//   "moduleDirectories": [
-//     "node_modules",
-//     "src"
-//   ]
-// },clear
