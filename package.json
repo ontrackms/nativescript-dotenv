@@ -2,7 +2,7 @@
   "name": "@ontrackms/nativescript-dotenv",
   "author": "Ian Brindley <ian.brindley@ontrackms.com>",
   "license": "ISC",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "main": "index.js",
   "repository": {
     "type": "git",
