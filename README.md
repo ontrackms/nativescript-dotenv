@@ -1,9 +1,9 @@
 # NativeScript Dotenv Plugin
-![NPM Version](https://img.shields.io/npm/v/%40ontrackms%2Fnativescript-dotenv)
+[![NPM](https://img.shields.io/npm/v/%40ontrackms%2Fnativescript-dotenv)][0]
 
-_Developed by Ontrack!_
+Adds common NativeScript configurations to Dotenv
 
-## Installation
+### Installation
 
 `npm i -D @ontrackms/nativescript-dotenv`
 
@@ -23,6 +23,8 @@ module.exports = (env) => {
 
 ### Configuration
 The following environment variables are supported in the dotenv (.env) file.
+
+[0]: https://www.npmjs.com/package/@ontrackms/nativescript-dotenv
 
 ```.env
 NATIVESCRIPT_BUNDLE_ID=com.corp.app.test
