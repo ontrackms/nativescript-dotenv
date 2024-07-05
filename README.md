@@ -14,7 +14,9 @@
 
 ## Installation
 
-`npm i -D @ontrackms/nativescript-dotenv`
+```console
+npm i -D @ontrackms/nativescript-dotenv
+```
 
 ## Usage
 Add the following lines to the exported function in `webpack.config.js`
