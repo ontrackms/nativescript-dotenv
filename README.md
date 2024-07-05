@@ -8,15 +8,15 @@
   ![Test Workflow](https://github.com/ontrackms/nativescript-dotenv/actions/workflows/test.yml/badge.svg)
   [![GitHub License](https://img.shields.io/github/license/ontrackms/nativescript-dotenv)][1]
 
+  Adds common NativeScript configurations to Dotenv
+
 </div>
 
-Adds common NativeScript configurations to Dotenv
-
-### Installation
+## Installation
 
 `npm i -D @ontrackms/nativescript-dotenv`
 
-### Usage
+## Usage
 Add the following lines to the exported function in `webpack.config.js`
 
 ```javascript
@@ -30,7 +30,7 @@ module.exports = (env) => {
 };
 ```
 
-### Configuration
+## Configuration
 The following environment variables are supported in the dotenv (.env) file.
 
 [0]: https://www.npmjs.com/package/@ontrackms/nativescript-dotenv
