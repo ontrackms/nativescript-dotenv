@@ -35,12 +35,14 @@ module.exports = (env) => {
 ## Configuration
 The following environment variables are supported in the dotenv (.env) file.
 
-[0]: https://www.npmjs.com/package/@ontrackms/nativescript-dotenv
-[1]: https://github.com/ontrackms/nativescript-dotenv?tab=MIT-1-ov-file
-[2]: https://ontrackms.com
+All variables are optional ⚙️
 
 ```.env
 NATIVESCRIPT_BUNDLE_ID=com.corp.app.test
 NATIVESCRIPT_BUNDLE_VERSION=3.2.1
 NATIVESCRIPT_APPLE_TEAM_ID=ASDFG1234
 ```
+
+[0]: https://www.npmjs.com/package/@ontrackms/nativescript-dotenv
+[1]: https://github.com/ontrackms/nativescript-dotenv?tab=MIT-1-ov-file
+[2]: https://ontrackms.com
