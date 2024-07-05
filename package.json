@@ -3,7 +3,7 @@
   "description": "Adds common NativeScript configurations to Dotenv",
   "author": "Ian Brindley <ian.brindley@ontrackms.com>",
   "license": "MIT",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "main": "dist/index.js",
   "repository": {
     "type": "git",
