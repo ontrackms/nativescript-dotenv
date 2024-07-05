@@ -1,7 +1,7 @@
 # NativeScript Dotenv Plugin
 [![NPM](https://img.shields.io/npm/v/%40ontrackms%2Fnativescript-dotenv)][0]
 [![GitHub License](https://img.shields.io/github/license/ontrackms/nativescript-dotenv)][1]
-[![Static Badge](https://img.shields.io/badge/OntrackMS-The_Smarter_Works_Management_Solution-B1BF21)][2]
+[![Static Badge](https://img.shields.io/badge/Ontrack-The_Smarter_Works_Management_Solution-B1BF21)][2]
 
 Adds common NativeScript configurations to Dotenv
 
