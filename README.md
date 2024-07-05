@@ -1,4 +1,5 @@
 # NativeScript Dotenv Plugin
+![NPM Version](https://img.shields.io/npm/v/%40ontrackms%2Fnativescript-dotenv)
 
 _Developed by Ontrack!_
 
