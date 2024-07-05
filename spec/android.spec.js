@@ -11,8 +11,7 @@ const {
   webpackConfig
 } = require('./spec.common');
 
-const { NativeScriptDotEnvPlugin } = require('@ontrackms/nativescript-dotenv');
-const { ValidationError } = require('@ontrackms/nativescript-dotenv/error');
+const { NativeScriptDotEnvPlugin, ValidationError } = require('@ontrackms/nativescript-dotenv');
 
 describe('NativeScriptDotEnvPlugin for Android', () => {
 

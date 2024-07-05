@@ -1,8 +1,7 @@
 const path = require('path');
 const webpack = require('@nativescript/webpack');
-const { NativeScriptDotEnvPlugin } = require('@ontrackms/nativescript-dotenv');
-const { IntegrationError } = require('@ontrackms/nativescript-dotenv/error');
 const { webpackConfig, setupBeforeAndAfter } = require('./spec.common');
+const { NativeScriptDotEnvPlugin, IntegrationError } = require('@ontrackms/nativescript-dotenv');
 
 const originalCwd = process.cwd();
 

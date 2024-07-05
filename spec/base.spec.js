@@ -2,11 +2,14 @@
 'use strict';
 
 const path = require('path');
-const { NativeScriptBundlePlugin } = require('@ontrackms/nativescript-dotenv');
-const { ValidationError, IntegrationError, ResourceRequiredError } = require('../src/error');
 const { runWebpackWithPluginConfig, setupBeforeAndAfter, webpackConfig } = require('./spec.common');
+const {
+  NativeScriptDotEnvPlugin,
+  ValidationError,
+  ResourceRequiredError
+} = require('@ontrackms/nativescript-dotenv');
 
-describe('NativeScriptBundlePlugin', () => {
+describe('NativeScriptDotEnvPlugin', () => {
 
   setupBeforeAndAfter(webpackConfig);
 
@@ -48,8 +51,8 @@ describe('NativeScriptBundlePlugin', () => {
     (err, stats) => {
       expect(err).toBeFalsy();
       const _package = require(path.resolve(webpackConfig.output.path, 'package.json'));
-      expect(_package).toHaveProperty('name', process.env[NativeScriptBundlePlugin.EnvironmentVariableMap.BundleID]);
-      expect(_package).toHaveProperty('version', process.env[NativeScriptBundlePlugin.EnvironmentVariableMap.BundleVersion]);
+      expect(_package).toHaveProperty('name', process.env[NativeScriptDotEnvPlugin.EnvironmentVariableMap.BundleID]);
+      expect(_package).toHaveProperty('version', process.env[NativeScriptDotEnvPlugin.EnvironmentVariableMap.BundleVersion]);
       done();
     });
   });
