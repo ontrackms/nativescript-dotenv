@@ -22,6 +22,10 @@ describe('NativeScript integration', () => {
     })
 
     it('should stop webpack if DotEnvPlugin not found in NativeScript', done => {
+        // @nativescript/webpack warns to the console when it can't determine
+        // the project flavor, which happens here since useConfig('base') is
+        // deliberately not called; silence that expected noise.
+        const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
         const badNativeScriptIntegration = () => {
             webpack.init({
                 ios: true,
@@ -32,6 +36,7 @@ describe('NativeScript integration', () => {
             webpack.resolveConfig();
         }
         expect(badNativeScriptIntegration).toThrow(IntegrationError);
+        warnSpy.mockRestore();
         done();
     });
 

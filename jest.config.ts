@@ -6,6 +6,26 @@ const config: Config = {
     "/spec/",
     "/dist/"
   ],
+  coverageThreshold: {
+    global: {
+      statements: 100,
+      branches: 100,
+      functions: 100,
+      lines: 100,
+    },
+    './src/plugin.ts': {
+      statements: 100,
+      branches: 100,
+      functions: 100,
+      lines: 100,
+    },
+    './src/error.ts': {
+      statements: 100,
+      branches: 100,
+      functions: 100,
+      lines: 100,
+    },
+  },
   rootDir: "./",
   transform: {
     '\\.ts?$': 'babel-jest'

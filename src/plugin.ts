@@ -12,11 +12,16 @@ export type NativeScriptDotenvOptions = {
   appResourcesPath: string,
   isAndroid: boolean,
   isIOS: boolean,
+  isRelease: boolean,
   dotenvPath: string,
   projectRoot: string,
   semver?: any,
-  verbose: true,
+  verbose: boolean,
 }
+
+// Virtually every CI/cloud build provider (GitHub Actions, GitLab CI,
+// CircleCI, Bitrise, App Center, Codemagic, Travis, etc.) sets CI=true.
+const isCI = () => Boolean(process.env.CI)
 
 enum EnvironmentVariableName {
   AppleTeamID = 'NATIVESCRIPT_APPLE_TEAM_ID',
@@ -31,8 +36,11 @@ export class NativeScriptDotEnvPlugin {
     appResourcesPath: 'App_Resources',
     isAndroid: false,
     isIOS: false,
+    isRelease: false,
     dotenvPath: '',
     projectRoot: process.cwd(),
+    // verbose logging is on by default for local builds, but automatically
+    // disabled on CI/cloud builds (see isCI above) unless explicitly set
     verbose: true,
   }
 
@@ -43,30 +51,40 @@ export class NativeScriptDotEnvPlugin {
   constructor(options: Partial<NativeScriptDotenvOptions> = {}) {
     this.options = { ...NativeScriptDotEnvPlugin.defaultOptions, ...options }
 
+    if (options.verbose === undefined && isCI()) {
+      this.options.verbose = false
+    }
+
     if (!this.options.isAndroid && !this.options.isIOS) {
       throw new ValidationError("No platform provided, expecting isIOS|isAndroid options.")
     }
 
     this.loadDotenv()
 
-    const semver = parseSemVer(options.semver || this.getEnv(NativeScriptDotEnvPlugin.EnvironmentVariableMap.BundleVersion))
+    // NATIVESCRIPT_BUNDLE_VERSION is optional; only parse/validate it if
+    // a value was actually provided (via options.semver or the env var).
+    const bundleVersion = options.semver || this.getEnv(NativeScriptDotEnvPlugin.EnvironmentVariableMap.BundleVersion)
 
-    if (!isValidSemVer(this.getEnv(NativeScriptDotEnvPlugin.EnvironmentVariableMap.BundleVersion))) {
-      throw new ValidationError('Invalid version string provided.');
-    }
+    if (bundleVersion !== undefined) {
+      if (!isValidSemVer(bundleVersion)) {
+        throw new ValidationError('Invalid version string provided.');
+      }
 
-    this.options.semver = {
-      ...semver,
-      /**
-       * @todo refactor version string templates
-       * @todo refactor build number strategies
-       */
-      build: `${semver.build || 1}`,
-      versionString: `${semver.major}.${semver.minor}.${semver.patch}`
-    }
+      const semver = parseSemVer(bundleVersion)
 
-    if (this.options.isAndroid && NativeScriptDotEnvPlugin.ANDROID_VERSION_CODE_MAX < parseInt(this.options.semver.build, 10)) {
-      throw new ValidationError('Android versionCode exceeds ANDROID_VERSION_CODE_MAX')
+      this.options.semver = {
+        ...semver,
+        /**
+         * @todo refactor version string templates
+         * @todo refactor build number strategies
+         */
+        build: `${semver.build || 1}`,
+        versionString: `${semver.major}.${semver.minor}.${semver.patch}`
+      }
+
+      if (this.options.isAndroid && NativeScriptDotEnvPlugin.ANDROID_VERSION_CODE_MAX < parseInt(this.options.semver.build, 10)) {
+        throw new ValidationError('Android versionCode exceeds ANDROID_VERSION_CODE_MAX')
+      }
     }
   }
 
@@ -87,6 +105,8 @@ export class NativeScriptDotEnvPlugin {
           new NativeScriptDotEnvPlugin({
             isIOS: env.ios,
             isAndroid: env.android,
+            // env.production is set by the NativeScript CLI for --release / publish builds
+            isRelease: env.production,
             dotenvPath: dotenvConfig.path,
             ...options
           })
@@ -111,16 +131,19 @@ export class NativeScriptDotEnvPlugin {
   }
 
   processEnvVars(compiler: any) {
-    const envVarMap = new Map<EnvironmentVariableName, Function>([
-      [EnvironmentVariableName.AppleTeamID, this.setAppleDevelopmentTeam],
-      [EnvironmentVariableName.BundleID, this.setBundleID],
-      [EnvironmentVariableName.BundleVersion, this.setBundleVersion],
-    ]);
-    Object.values(NativeScriptDotEnvPlugin.EnvironmentVariableMap).forEach(variable => {
-      if (this.getEnv(variable)) {
-        envVarMap.get(variable)!.call(this, compiler);
-      }
-    })
+    if (this.getEnv(NativeScriptDotEnvPlugin.EnvironmentVariableMap.AppleTeamID)) {
+      this.setAppleDevelopmentTeam(compiler)
+    }
+
+    if (this.getEnv(NativeScriptDotEnvPlugin.EnvironmentVariableMap.BundleID)) {
+      this.setBundleID(compiler)
+    }
+
+    // driven by this.options.semver rather than the env var directly, so an
+    // explicit options.semver (passed without the env var) still takes effect
+    if (this.options.semver) {
+      this.setBundleVersion(compiler)
+    }
   }
 
   setAppleDevelopmentTeam(compiler: any) {
@@ -129,10 +152,20 @@ export class NativeScriptDotEnvPlugin {
     }
 
     const xcconfigString = readFileSync(this.xcconfigPath, 'utf-8')
-    const xcconfigDevTeamMatches = xcconfigString.match(/DEVELOPMENT_TEAM\s+=\s+(\w+);?/)
+    const devTeamPattern = /DEVELOPMENT_TEAM\s+=\s+(\w+);?/
+    const allDevTeamMatches = xcconfigString.match(new RegExp(devTeamPattern, 'g'))
 
-    if (xcconfigDevTeamMatches && xcconfigDevTeamMatches[1] && xcconfigDevTeamMatches[1] !== this.getEnv(NativeScriptDotEnvPlugin.EnvironmentVariableMap.AppleTeamID)) {
-      writeFileSync(this.xcconfigPath, xcconfigString.replace(xcconfigDevTeamMatches[1], this.getEnv(NativeScriptDotEnvPlugin.EnvironmentVariableMap.AppleTeamID)), 'utf-8');
+    // fail loudly rather than silently no-op'ing (zero matches) or only
+    // patching the first of several occurrences (multiple matches) if the
+    // file has been reformatted in a way the regex doesn't expect
+    if (!allDevTeamMatches || allDevTeamMatches.length !== 1) {
+      throw new IntegrationError(`Expected exactly one DEVELOPMENT_TEAM entry in ${this.xcconfigPath}, found ${allDevTeamMatches ? allDevTeamMatches.length : 0}.`)
+    }
+
+    const [, currentTeamId] = xcconfigString.match(devTeamPattern)!
+
+    if (currentTeamId !== this.getEnv(NativeScriptDotEnvPlugin.EnvironmentVariableMap.AppleTeamID)) {
+      writeFileSync(this.xcconfigPath, xcconfigString.replace(currentTeamId, this.getEnv(NativeScriptDotEnvPlugin.EnvironmentVariableMap.AppleTeamID)), 'utf-8');
     }
   }
 
@@ -143,17 +176,38 @@ export class NativeScriptDotEnvPlugin {
   }
 
   setBundleVersion(compiler: any) {
-    const { isAndroid, semver } = this.options
-    const absPath = isAndroid ? this.androidManifestPath : this.iOSPlistPath
-    let fileContent = readFileSync(absPath, 'utf-8');
+    const { isAndroid, isRelease, semver } = this.options
 
     const packageJSON = JSON.parse(readFileSync(this.packageJSONPath, 'utf-8'))
     packageJSON.version = semver.versionString
     writeFileSync(this.packageJSONPath, JSON.stringify(packageJSON, null, 2))
 
+    // Android's versionCode is bumped, not just set, so only touch it on
+    // release builds (env.production, from `ns build/run --release`) to
+    // avoid incrementing AndroidManifest.xml on every dev/watch rebuild.
+    if (isAndroid && !isRelease) {
+      return
+    }
+
+    const absPath = isAndroid ? this.androidManifestPath : this.iOSPlistPath
+    let fileContent = readFileSync(absPath, 'utf-8');
+
     if (isAndroid) {
-      const versionCodeMatch = fileContent.match(/versionCode="(.*?)"/);
-      const newVersionCode = Number(versionCodeMatch![1]) + 1;
+      // fail loudly rather than silently no-op'ing (zero matches) or only
+      // patching the first of several occurrences (multiple matches) if the
+      // manifest has been reformatted in a way the regex doesn't expect
+      const versionCodeMatches = fileContent.match(/versionCode="(.*?)"/g)
+      if (!versionCodeMatches || versionCodeMatches.length !== 1) {
+        throw new IntegrationError(`Expected exactly one versionCode attribute in ${absPath}, found ${versionCodeMatches ? versionCodeMatches.length : 0}.`)
+      }
+
+      const versionNameMatches = fileContent.match(/versionName="(.*?)"/g)
+      if (!versionNameMatches || versionNameMatches.length !== 1) {
+        throw new IntegrationError(`Expected exactly one versionName attribute in ${absPath}, found ${versionNameMatches ? versionNameMatches.length : 0}.`)
+      }
+
+      const [, currentVersionCode] = fileContent.match(/versionCode="(.*?)"/)!
+      const newVersionCode = Number(currentVersionCode) + 1;
       fileContent = fileContent
         .replace(/(versionCode=".*?")/, `versionCode="${newVersionCode}"`)
         .replace(/(versionName=".*?")/, `versionName="${semver.versionString}"`);

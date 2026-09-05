@@ -61,6 +61,7 @@ function runWebpackWithPluginConfig(pluginConfig, callback) {
         appResourcesPath,
         dotenvPath: path.resolve(webpackConfig.output.path, '.env'),
         projectRoot: webpackConfig.output.path,
+        verbose: false,
         ...pluginConfig,
       }),
     ]
