@@ -46,6 +46,7 @@
   "scripts": {
     "test": "NODE_ENV=test jest --runInBand --verbose --coverage --silent=false",
     "prebuild": "del ./dist/",
-    "build": "tsc --build"
+    "build": "tsc --build",
+    "prepublishOnly": "npm run build"
   }
 }
