@@ -18,21 +18,25 @@ describe('NativeScriptDotEnvPlugin for Android', () => {
   setupBeforeAndAfter(webpackConfig);
 
   it('writes the correct version codes to AndroidManifest.xml file', done => {
+    const fileContent = fs.readFileSync(path.resolve(appResourcesPath, 'Android', 'src', 'main', 'AndroidManifest.xml'), 'utf-8');
+    const currentVersionCodeMatch = fileContent.match(/versionCode="(.*?)"/);
+    expect(currentVersionCodeMatch).toHaveLength(2);
+    expect(currentVersionCodeMatch[1]).toMatch(/^\d+$/);
 
     runWebpackWithPluginConfig({
       isAndroid: true,
     },
     (err, stats) => {
       expect(err).toBeFalsy();
-      const fileContent = fs.readFileSync(path.resolve(appResourcesPath, 'Android', 'src', 'main', 'AndroidManifest.xml'), 'utf-8');
+      const fileContentNew = fs.readFileSync(path.resolve(appResourcesPath, 'Android', 'src', 'main', 'AndroidManifest.xml'), 'utf-8');
       const semverDefinition = semver.parseSemVer(process.env[NativeScriptDotEnvPlugin.EnvironmentVariableMap.BundleVersion]);
       // @todo refactor these templates
-      const versionCode = `${semverDefinition.major}${semverDefinition.minor}${semverDefinition.patch}${semverDefinition.build || 1}`;
       const versionName = `${semverDefinition.major}.${semverDefinition.minor}.${semverDefinition.patch}`;
-      const versionCodeMatch = fileContent.match(/versionCode="(.*?)"/);
+      const versionCodeMatch = fileContentNew.match(/versionCode="(.*?)"/);
       expect(versionCodeMatch).toHaveLength(2);
-      expect(versionCodeMatch).toContain(versionCode);
-      const versionNameMatch = fileContent.match(/versionName="(.*?)"/)
+      expect(versionCodeMatch[1]).toMatch(/^\d+$/);
+      expect(Number(versionCodeMatch[1]) - Number(currentVersionCodeMatch[1])).toEqual(1);
+      const versionNameMatch = fileContentNew.match(/versionName="(.*?)"/)
       expect(versionNameMatch).toHaveLength(2);
       expect(versionNameMatch).toContain(versionName);
       done();

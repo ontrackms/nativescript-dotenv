@@ -118,7 +118,7 @@ export class NativeScriptDotEnvPlugin {
     ]);
     Object.values(NativeScriptDotEnvPlugin.EnvironmentVariableMap).forEach(variable => {
       if (this.getEnv(variable)) {
-        envVarMap.get(variable).call(this, compiler);
+        envVarMap.get(variable)!.call(this, compiler);
       }
     })
   }
@@ -132,7 +132,7 @@ export class NativeScriptDotEnvPlugin {
     const xcconfigDevTeamMatches = xcconfigString.match(/DEVELOPMENT_TEAM\s+=\s+(\w+);?/)
 
     if (xcconfigDevTeamMatches && xcconfigDevTeamMatches[1] && xcconfigDevTeamMatches[1] !== this.getEnv(NativeScriptDotEnvPlugin.EnvironmentVariableMap.AppleTeamID)) {
-      writeFileSync(this.xcconfigPath, xcconfigString.replace(xcconfigDevTeamMatches[1], process.env.APPLE_TEAM_ID));
+      writeFileSync(this.xcconfigPath, xcconfigString.replace(xcconfigDevTeamMatches[1], this.getEnv(NativeScriptDotEnvPlugin.EnvironmentVariableMap.AppleTeamID)), 'utf-8');
     }
   }
 
@@ -145,15 +145,17 @@ export class NativeScriptDotEnvPlugin {
   setBundleVersion(compiler: any) {
     const { isAndroid, semver } = this.options
     const absPath = isAndroid ? this.androidManifestPath : this.iOSPlistPath
-    let fileContent = readFileSync(absPath, 'utf8');
+    let fileContent = readFileSync(absPath, 'utf-8');
 
     const packageJSON = JSON.parse(readFileSync(this.packageJSONPath, 'utf-8'))
     packageJSON.version = semver.versionString
     writeFileSync(this.packageJSONPath, JSON.stringify(packageJSON, null, 2))
 
     if (isAndroid) {
+      const versionCodeMatch = fileContent.match(/versionCode="(.*?)"/);
+      const newVersionCode = Number(versionCodeMatch![1]) + 1;
       fileContent = fileContent
-        .replace(/(versionCode=".*?")/, `versionCode="${semver.major}${semver.minor}${semver.patch}${semver.build}"`)
+        .replace(/(versionCode=".*?")/, `versionCode="${newVersionCode}"`)
         .replace(/(versionName=".*?")/, `versionName="${semver.versionString}"`);
     } else {
       const { build: CFBundleVersion, versionString: CFBundleShortVersionString } = semver;
